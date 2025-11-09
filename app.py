@@ -50,15 +50,22 @@ def login():
   username = data.get("username")
   password = data.get("password")
 
+  conn = get_db_connection()
+  cursor = conn.cursor(dictionary=True)
+
+  cursor.execute("SELECT * FROM user WHERE username = %s AND password = %s", (username, password))
+  user = cursor.fetchone()
+
+  cursor.close()
+  conn.close()
+
   #TO DO (once christian set up database)
   #verify username exists in db and ensure credentials are valid
-  #return json back to frontend saying whether the user is logged in or not 
-
-  #temporary placeholder sends placeholder response back to front end
-  return jsonify({
-    "status": "in-progress",
-    "message": "Login logic not implemented yet"
-  })
+  #return json back to frontend saying whether the user is logged in or not
+  if user:
+    return jsonify({"message": f"Hello, {user['username']}."})
+  else:
+    return jsonify({"message": "Invalid username or password"})
 
 if __name__ == "__main__":
   app.run()
