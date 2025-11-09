@@ -16,10 +16,6 @@ db_config = {
 def get_db_connection():
   return mysql.connector.connect(**db_config)
 
-@app.route('/')
-def home():
-  return 'testing'
-
 #people who submit a username and password will have their
 #credentials validated 
 @app.route('/login', methods=['POST'])
