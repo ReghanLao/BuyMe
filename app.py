@@ -16,30 +16,9 @@ db_config = {
 def get_db_connection():
   return mysql.connector.connect(**db_config)
 
-
 @app.route('/')
 def home():
   return 'testing'
-
-
-#registering new user
-@app.route('/register', methods=['POST'])
-def register():
-  data = request.json
-  username = data.get("username")
-  password = data.get("password")
-
-  conn = get_db_connection()
-  cursor = conn.cursor()
-
-  cursor.execute("INSERT INTO user (username, password) VALUES (%s, %s)", (username, password))
-  conn.commit()
-
-  cursor.close()
-  conn.close()
-
-  return jsonify({"message": "User registered."})
-
 
 #people who submit a username and password will have their
 #credentials validated 
