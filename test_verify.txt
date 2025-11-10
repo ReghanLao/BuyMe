@@ -1,6 +1,2 @@
-# command to test if user exists (Windows PowerShell)
-(Invoke-WebRequest -Uri "http://127.0.0.1:5000/login" `
-  -Method POST `
-  -Headers @{ "Content-Type" = "application/json" } `
-  -Body '{"username": "thebuyer", "password": "thebuyer656"}').Content
-
+Username: bobby123
+Password: 12345
