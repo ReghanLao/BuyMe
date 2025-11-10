@@ -5,7 +5,20 @@
 2. Python - Flask (Backend)
 3. MySQL - Database
 
-### Project Info 
-1. Create a .env file in your frontend folders and type in `VITE_API_URL=YOUR_BACKEND_URL_HERE`. Smth like `VITE_API_URL=http://localhost:5000`. The .env file in the frontend folder tells React where the backend is located. This file is in the .gitignore for security reasons so that's why you need to create your own locally.
+### How to run our project 
 
-2. To download missing dependencies do `npm install`
+1. Import schema into mySQL
+
+2. Start backend:
+    cd backend
+    pip install -r requirements.txt
+    python app.py
+
+3. Start frontend:
+   cd frontend
+   npm install
+   Create a .env file inside the frontend folder and add: VITE_API_URL=http://localhost:5000
+   npm run dev
+
+4. Frontend: http://localhost:5173
+   Backend: http://localhost:5000
