@@ -31,7 +31,7 @@ function Login() {
   };
 
   return (
-    <div className="login-container" style={{ textAlign: "center", marginTop: "50px" }}>
+    <div className="login-container">
       <h2>Login</h2>
       <form onSubmit={handleLogin}>
         <input
@@ -40,21 +40,20 @@ function Login() {
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           required
-          style={{ display: "block", margin: "10px auto", padding: "8px" }}
         />
         <input
-          type="password"
+          type="text"
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           required
-          style={{ display: "block", margin: "10px auto", padding: "8px" }}
         />
-        <button type="submit" style={{ padding: "8px 20px" }}>Login</button>
+        <button type="submit">Login</button>
       </form>
       <p>{message}</p>
     </div>
-  );
+);
+
 }
 
 export default Login;
