@@ -5,14 +5,14 @@
 2. Python - Flask (Backend)
 3. MySQL - Database
 
-### How to run our project 
+### How to run our project
 
 1. Import schema into mySQL
 
 2. Start backend:
-    cd backend
-    pip install -r requirements.txt
-    python app.py
+   cd backend
+   pip install -r requirements.txt
+   python app.py
 
 3. Start frontend:
    cd frontend
@@ -22,3 +22,6 @@
 
 4. Frontend: http://localhost:5173
    Backend: http://localhost:5000
+
+5. Login Information
+   Username and Password is in test_verify.txt
