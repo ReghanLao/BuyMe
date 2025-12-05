@@ -1,3 +1,9 @@
+CREATE TABLE user (
+  uid INT NOT NULL AUTO_INCREMENT PRIMARY KEY,
+  username VARCHAR(50) NOT NULL UNIQUE,
+  password VARCHAR(50) NOT NULL
+)
+
 CREATE TABLE item (
   iid        INT AUTO_INCREMENT PRIMARY KEY,
   seller_id  INT NOT NULL,
@@ -41,7 +47,7 @@ CREATE TABLE pants (
 CREATE TABLE auction (
   auction_id      INT AUTO_INCREMENT PRIMARY KEY,
 
-  item_id         INT NOT NULL,
+  UNIQUE item_id         INT NOT NULL,
   seller_id       INT NOT NULL,
 
   initial_price   DECIMAL(10,2) NOT NULL,

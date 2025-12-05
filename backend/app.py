@@ -77,7 +77,7 @@ def create_auction():
                    """, (item_id, 
                          item_details.get("size"), 
                          item_details.get("gender"),
-                         item_details.get("material").
+                         item_details.get("material"),
                          item_details.get("color"),
                          item_details.get("brand"),
                          item_details.get("condition")

@@ -28,7 +28,7 @@ export default function AuctionForm() {
     e.preventDefault();
 
     try {
-      const response = await fetch("${API_URL}/api/auctions", {
+      const response = await fetch(`${API_URL}/api/auctions`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(form),
@@ -60,6 +60,7 @@ export default function AuctionForm() {
           placeholder="Seller ID"
           value={form.seller_id}
           onChange={handleChange}
+          required
         />
 
         <input
@@ -67,6 +68,7 @@ export default function AuctionForm() {
           placeholder="Item Name"
           value={form.name}
           onChange={handleChange}
+          required
         />
 
         <input
@@ -74,6 +76,7 @@ export default function AuctionForm() {
           placeholder="Item Type"
           value={form.item_type}
           onChange={handleChange}
+          required
         />
 
         <textarea
@@ -81,6 +84,7 @@ export default function AuctionForm() {
           placeholder="Item Details"
           value={form.item_details}
           onChange={handleChange}
+          required
         />
 
         <input
@@ -89,6 +93,7 @@ export default function AuctionForm() {
           placeholder="Initial Price"
           value={form.initial_price}
           onChange={handleChange}
+          required
         />
 
         <input
@@ -97,6 +102,7 @@ export default function AuctionForm() {
           placeholder="Minimum Sell Price"
           value={form.min_sell_price}
           onChange={handleChange}
+          required
         />
 
         <input
@@ -105,6 +111,7 @@ export default function AuctionForm() {
           placeholder="Bid Increment"
           value={form.bid_increment}
           onChange={handleChange}
+          required
         />
 
         <input
@@ -112,6 +119,7 @@ export default function AuctionForm() {
           name="start_time"
           value={form.start_time}
           onChange={handleChange}
+          required
         />
 
         <input
@@ -119,6 +127,7 @@ export default function AuctionForm() {
           name="end_time"
           value={form.end_time}
           onChange={handleChange}
+          required
         />
 
         <button type="submit">Create Auction</button>
