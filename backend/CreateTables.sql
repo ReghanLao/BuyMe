@@ -47,7 +47,7 @@ CREATE TABLE pants (
 CREATE TABLE auction (
   auction_id      INT AUTO_INCREMENT PRIMARY KEY,
 
-  item_id         INT NOT NULL,
+  UNIQUE item_id         INT NOT NULL,
   seller_id       INT NOT NULL,
 
   initial_price   DECIMAL(10,2) NOT NULL,
