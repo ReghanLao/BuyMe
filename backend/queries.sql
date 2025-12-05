@@ -72,3 +72,19 @@ CREATE TABLE bid (
   FOREIGN KEY (auction_id) REFERENCES auction(auction_id),
   FOREIGN KEY (bidder_id)  REFERENCES user(uid),
 );
+
+CREATE TABLE autobid (
+  auction_id INT NOT NULL,
+  bidder_id INT NOT NULL,
+  max_bid DECIMAL(10,2) NOT NULL,
+  PRIMARY KEY (auction_id, bidder_id),
+  FOREIGN KEY (auction_id) REFERENCES auction(auction_id),
+  FOREIGN KEY (bidder_id) REFERENCES user(uid)
+);
+
+CREATE TABLE notification (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  message TEXT NOT NULL,
+  FOREIGN KEY (user_id) REFERENCES user(uid)
+);
