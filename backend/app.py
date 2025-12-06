@@ -200,7 +200,7 @@ def place_bid(auction_id):
             "UPDATE auction SET current_price = %s, winner_id = %s WHERE auction_id = %s",
             (str(amount), bidder_id, auction_id))
     
-    #let autobids react (TO BE IMPLEMENTED)
+    #let autobids react 
     #resolve_autobids_simple(conn, cursor, auction_id)
     
     #fetch final current_price and final current winner
@@ -232,6 +232,20 @@ def place_bid(auction_id):
     conn.rollback()
     return jsonify({'error':'internal error'}), 500
   finally:
+    cursor.close()
+    conn.close()
+
+@app.route('/api/auctions/<int:auction_id>/bids', methods=['GET'])
+def get_bid_history(auction_id):
+  conn = get_db_connection()
+  cursor = conn.cursor(dictionary=True)
+
+  #fetch bid history for a particular auction ordered by earliest to latest
+  try:
+    cursor.execute("SELECT bid_id, bidder_id, amount, created_at FROM bid WHERE auction_id = %s ORDER BY created_at ASC", (auction_id))
+    rows = cursor.fetchall()
+    return jsonify({'bids': rows})
+  finally: 
     cursor.close()
     conn.close()
 
