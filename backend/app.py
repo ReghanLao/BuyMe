@@ -201,6 +201,7 @@ def place_bid(auction_id):
             (str(amount), bidder_id, auction_id))
     
     #let autobids react 
+    ## TO BE IMPLEMENTED
     #resolve_autobids_simple(conn, cursor, auction_id)
     
     #fetch final current_price and final current winner
@@ -235,12 +236,51 @@ def place_bid(auction_id):
     cursor.close()
     conn.close()
 
+#allows users to post their max autobid 
+@app.route('/api/auctions/<int:auction_id>/autobid', methods=['POST'])
+def set_autobid(auction_id):
+  data = request.json or {} #incase req body isn't valid json 
+  bidder_id = data.get('bidder_id')
+  max_bid = data.get('max_bid')
+
+  if bidder_id is None or max_bid is None:
+    return jsonify({'error': 'missing fields either bidder id or max bid'}), 400
+  
+  try: 
+    max_bid = Decimal(str((max_bid)))
+  except:
+    return jsonify({'error': 'invalid max bid'}), 400
+
+  conn = get_db_connection()
+  cursor = conn.cursor(dictionary=True)
+
+  try:
+    conn.start_transaction()
+    #check auction exists and is running
+    #want to set lock on auction row so that no other transaction can modify it 
+    cursor.execute("SELECT auction_id, current_price, status FROM auction WHERE auction_id = %s FOR UPDATE", (auction_id,))
+    auction = cursor.fetchone()
+    if not auction:
+      conn.rollback()
+      return jsonify({'error':'auction was not found'}), 404
+    if auction['status'] != 'running':
+      conn.rollback()
+      return jsonify({'error':'auction is not running'}), 400
+    
+    #now we want to update / insert the autobid 
+    
+  except:
+
+
+
+
+
+#fetch bid history for a particular auction ordered by earliest to latest
 @app.route('/api/auctions/<int:auction_id>/bids', methods=['GET'])
 def get_bid_history(auction_id):
   conn = get_db_connection()
   cursor = conn.cursor(dictionary=True)
 
-  #fetch bid history for a particular auction ordered by earliest to latest
   try:
     cursor.execute("SELECT bid_id, bidder_id, amount, created_at FROM bid WHERE auction_id = %s ORDER BY created_at ASC", (auction_id))
     rows = cursor.fetchall()
@@ -248,12 +288,6 @@ def get_bid_history(auction_id):
   finally: 
     cursor.close()
     conn.close()
-
-
-
-
-
-
 
 if __name__ == "__main__":
   app.run()
