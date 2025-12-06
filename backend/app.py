@@ -226,9 +226,9 @@ def place_bid(auction_id):
       (auction_id, final['winner_id']))
     
     rows = cursor.fetchall()
-    msg = f"A higher bid of {final['current_price']} has been placed on auction {auction_id}."
+    message = f"A higher bid of {final['current_price']} has been placed on auction {auction_id}."
     for row in rows:
-      create_notification(cursor, row['bidder_id'], auction_id, msg)
+      create_notification(cursor, row['bidder_id'], auction_id, message)
 
     #commit transaction
     conn.commit()
@@ -242,7 +242,7 @@ def place_bid(auction_id):
     })
   except: 
     conn.rollback()
-    return jsonify({'error':'internal error'}), 500
+    return jsonify({'error':'error starting DB transaction'}), 500  
   finally:
     cursor.close()
     conn.close()
@@ -279,8 +279,38 @@ def set_autobid(auction_id):
       return jsonify({'error':'auction is not running'}), 400
     
     #now we want to update / insert the autobid 
-    
+    cursor.execute("SELECT * FROM autobid WHERE auction_id=%s and bidder_id=%s", (auction_id, bidder_id))
+    autobid_exists = cursor.fetchone()
+
+    #if exists just update autobid
+    if autobid_exists:
+      cursor.execute("UPDATE autobid SET max_bid=%s WHERE auction_id=%s AND bidder_id=%s", (str(max_bid), auction_id, bidder_id))
+    else:
+      cursor.execute("INSERT INTO autobid (auction_id, bidder_id, max_bid) VALUES (%s, %s, %s)", (auction_id, bidder_id, str(max_bid)))
+
+    #allowing other autobids to react 
+    #resolve_autobids_simple(conn, cursor, auction_id)
+
+    #notify other bidders if they were outbid as a result of setting the autobid
+    cursor.execute("SELECT current_price, winner_id FROM auction WHERE auction_id = %s", (auction_id,))
+    final = cursor.fetchone()
+
+    #fetch other biders 
+    cursor.execute("SELECT DISTINCT bidder_id FROM bid WHERE auction_id = %s AND bidder_id != %s",
+      (auction_id, final['winner_id']))
+    rows = cursor.fetchall()
+    message = f"A higher bid of {final['current_price']} has been placed on auction {auction_id}."
+    for row in rows:
+      create_notification(cursor, row['bidder_id'], auction_id, message)
+
+    conn.commit()
+    return jsonify({'message':'autobid was set/updated'}), 201
   except:
+    conn.rollback()
+    return jsonify({'error':'error starting DB transaction'}), 500
+  finally:
+    cursor.close()
+    conn.close()
 
 
 
