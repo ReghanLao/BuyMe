@@ -81,3 +81,18 @@ WHERE b.bidder_id = ?;
 SELECT *
 FROM auction
 WHERE seller_id = ?;
+
+-- Search for auctions/items
+SELECT
+  a.auction_id,
+  a.status,
+  a.current_price,
+  a.initial_price,
+  a.end_time,
+  i.iid,
+  i.name,
+  i.item_type
+FROM auction a
+JOIN item i ON a.item_id = i.iid
+WHERE a.status = 'running'
+  AND NOW() BETWEEN a.start_time AND a.end_time;
