@@ -4,10 +4,14 @@ from flask_cors import CORS
 import mysql.connector
 from config import DB_HOST, DB_USER, DB_PASSWORD, DB_NAME
 from decimal import Decimal
+from items import items_bp
+
 
 #sets up flask app and allows frontend to communicate with backend
 app = Flask(__name__)
 CORS(app)
+app.register_blueprint(items_bp)
+
 
 db_config = {
   'host': DB_HOST,
@@ -163,8 +167,15 @@ def place_bid(auction_id):
     conn.start_transaction()
 
     cursor.execute(
-      "SELECT auction_id, current_price, bid_increment, end_time, status, min_sell_price, seller_id"
-      "FROM auction WHERE auction_id = %s FOR UPDATE", (auction_id,))
+        """
+        SELECT auction_id, current_price, bid_increment, end_time, status,
+              min_sell_price, seller_id
+        FROM auction
+        WHERE auction_id = %s
+        FOR UPDATE
+        """,
+        (auction_id,)
+    )
 
     auction = cursor.fetchone()
 

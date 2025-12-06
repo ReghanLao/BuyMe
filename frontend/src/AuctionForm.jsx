@@ -42,6 +42,7 @@ export default function AuctionForm() {
         setMessage(data.message);
       }
     } catch (err) {
+        console.error("AuctionForm error:", err);
       setMessage("Error! Could not reach backend ");
     }
 
