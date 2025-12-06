@@ -1,7 +1,9 @@
+import datetime
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import mysql.connector
 from config import DB_HOST, DB_USER, DB_PASSWORD, DB_NAME
+from decimal import Decimal
 
 #sets up flask app and allows frontend to communicate with backend
 app = Flask(__name__)
@@ -131,6 +133,113 @@ def create_auction():
     "auction_id": auction_id,
     "item_id": item_id
   })
+
+#helper function - simple notification insert
+def create_notification(cursor, user_id, auction_id, message):
+    cursor.execute(
+        "INSERT INTO notification (user_id, auction_id, message) VALUES (%s, %s, %s)",
+        (user_id, auction_id, message))
+
+#lets user place a manual bid 
+@app.route('/api/auctions/<int:auction_id>/bid', methods=['POST'])
+def place_bid(auction_id):
+  data = request.json or {} #incase req body isn't valid json 
+  bidder_id = data.get('bidder_id')
+  amount = data.get('amount')
+
+  if bidder_id is None or amount is None:
+    return jsonify({'error':'missing bidder_id or amount'}), 400
+  
+  #convert amount to decimal
+  try:
+    amount = Decimal(str(amount))
+  except Exception:
+    return jsonify({'error':'invalid amount'}), 400
+  
+  conn = get_db_connection()
+  cursor = conn.cursor(dictionary=True)
+
+  try:
+    conn.start_transaction()
+
+    cursor.execute(
+      "SELECT auction_id, current_price, bid_increment, end_time, status, min_sell_price, seller_id"
+      "FROM auction WHERE auction_id = %s FOR UPDATE", (auction_id,))
+
+    auction = cursor.fetchone()
+
+    #if any errors fetching auction then rollback transaction aka release lock 
+    if not auction:
+      conn.rollback()
+      return jsonify({'error':'could not find auction'}), 404
+
+    if auction['status'] != 'running':
+      conn.rollback()
+      return jsonify({'error':'auction not running'}), 400
+
+    if auction['end_time'] and auction['end_time'] <= datetime.utcnow():
+      conn.rollback()
+      return jsonify({'error':'auction already ended'}), 400
+
+    current_price = Decimal(str(auction['current_price']))
+    bid_increment = Decimal(str(auction['bid_increment']))
+
+    min_required = current_price + bid_increment
+    if amount < min_required:
+      conn.rollback()
+      return jsonify({'error':f'Bid is too low! Minimum required {min_required}'}), 400
+    
+    #insert the manual bid if valid 
+    cursor.execute(
+        "INSERT INTO bid (auction_id, bidder_id, amount) VALUES (%s,%s,%s)",
+        (auction_id, bidder_id, str(amount)))
+    new_bid_id = cursor.lastrowid
+
+    #update the auction's new price to be current price and the "current winner"
+    cursor.execute(
+            "UPDATE auction SET current_price = %s, winner_id = %s WHERE auction_id = %s",
+            (str(amount), bidder_id, auction_id))
+    
+    #let autobids react (TO BE IMPLEMENTED)
+    #resolve_autobids_simple(conn, cursor, auction_id)
+    
+    #fetch final current_price and final current winner
+    cursor.execute("SELECT current_price, winner_id FROM auction WHERE auction_id = %s", (auction_id,))
+    final = cursor.fetchone()
+
+    #notify other bidders that they were outbid 
+    #gets all other bidders in the same auction as the winner so far
+    cursor.execute(
+      "SELECT DISTINCT bidder_id FROM bid WHERE auction_id = %s AND bidder_id != %s",
+      (auction_id, final['winner_id']))
+    
+    rows = cursor.fetchall()
+    msg = f"A higher bid of {final['current_price']} has been placed on auction {auction_id}."
+    for row in rows:
+      create_notification(cursor, row['bidder_id'], auction_id, msg)
+
+    #commit transaction
+    conn.commit()
+
+    #updates front end
+    return jsonify({
+      'message':'bid was placed',
+      'bid_id': new_bid_id,
+      'current_price': final['current_price'],
+      'winner_id': final['winner_id']
+    })
+  except: 
+    conn.rollback()
+    return jsonify({'error':'internal error'}), 500
+  finally:
+    cursor.close()
+    conn.close()
+
+
+
+
+
+
 
 if __name__ == "__main__":
   app.run()
